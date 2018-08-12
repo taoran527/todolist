@@ -18,7 +18,7 @@
             <label v-bind:class="{delete: item.state}">{{item.name}}</label>
             <a class="del" @click="del(item.id,getindex+index)"></a>
           </div>
-          <input type="text" class="editItem" v-show="editItem === getindex+index" v-model="newname" @keyup.enter="updatename(getindex+index)"   v-focus="focusState" @focus="focus($event)"/>
+          <input type="text" class="editItem" v-show="editItem === getindex+index" v-model="newname" @keyup.enter="updatename(getindex+index)"   v-focus="focusState" @focus="focus($event)" v-on:blur="test"/>
         </li>
       </ul>
     </div>
@@ -75,12 +75,10 @@
         showPeople(){
           var arr = [];
           var off = this.$store.state.offset;
-          this.peoples.forEach(function (value,index) {
-            if(index>=off && index< off+5){
-              arr.push(value);
-            }
-          },this);
-          //arr = this.peoples.slice(off,5);
+          this.peoples.forEach((value,index)=>{(index>=off && index< off+5)&&arr.push(value)});
+          // arr = this.peoples.slice(off,5+off);
+          console.log("computed arr", arr);
+          console.log(this.peoples, off);
           // console.log(this.peoples.length)
           // console.log(this.getindex);
           return arr;
@@ -291,6 +289,10 @@
               this.selectAll=false;
             }
           }
+        },
+        test() {
+          console.log("on blur");
+          this.editItem = 10000;
         }
       }
     }
