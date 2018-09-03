@@ -2,6 +2,8 @@ import Vue from 'vue'
 import vuex from 'vuex'
 import mutations from './mutation'
 import localstore_s from '../localstore.js'
+// 引入 axios
+import axios from 'axios'
 Vue.use(vuex);
 
 // const state = {
@@ -13,5 +15,15 @@ export default new vuex.Store({
     offset:0,
     recordNum:localstore_s.fetch("recordNum")
   },
-  mutations
+  mutations,
+  actions:{
+    // // 封装一个 ajax 方法
+    // saveForm (context) {
+    //   axios({
+    //     method: 'post',
+    //     url: '/user',
+    //     data: context.state.test02
+    //   })
+    // }
+  }
 })

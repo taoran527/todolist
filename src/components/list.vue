@@ -39,6 +39,7 @@
 <script>
   import localstore_l from '../localstore.js'
   import page from './page.vue'
+  import api from '../api/api.js'
     export default {
       data(){
         return {
@@ -63,7 +64,12 @@
           thing: "",
           //false是未完成状态，初始化都是未完成的状态
           // peoples: [{id:"1",name:"小鬼王",state:false},{id:'2',name:"沈巍",state:false},{id:'3',name:"沈教授",state:false},{id:'4',name:"朱一龙",state:false}],
-          peoples: localstore_l.fetch("peoples")
+          // peoples: localstore_l.fetch("peoples")
+          //存放record
+          peoples:[],
+          //创建record
+          create:{},
+          update:{},
         }
       },
       //组件
@@ -77,8 +83,8 @@
           var off = this.$store.state.offset;
           this.peoples.forEach((value,index)=>{(index>=off && index< off+5)&&arr.push(value)});
           // arr = this.peoples.slice(off,5+off);
-          console.log("computed arr", arr);
-          console.log(this.peoples, off);
+          // console.log("computed arr", arr);
+          // console.log(this.peoples, off);
           // console.log(this.peoples.length)
           // console.log(this.getindex);
           return arr;
@@ -110,7 +116,7 @@
         }
       },
       created: function () {
-        console.log("hey"+this.peoples);
+        this.getRecord();
         this.showPage();
         // localStorage.clear();
       },
@@ -118,7 +124,7 @@
         checkItem: {
           handler: function (val) {
             this.judgeLength();
-            console.log(val);
+            // console.log(val);
             localstore_l.save("checkItem",val);
           },
           deep: true
@@ -130,6 +136,7 @@
             // console.log(this.peoples.length)
             this.$store.commit('RECORD_NUM',this.peoples.length );
             // console.log(this.$store.state.recordNum);
+
             this.showPage();
           },
           deep:true
@@ -157,17 +164,35 @@
             this.isPage = false;
           }
         },
+        getRecord(){
+          api._get().then(res =>{
+            this.peoples = res;
+          },err =>{
+            console.log(err);
+          })
+        },
         // 添加项目
         add(){
           var thing = this.thing;
           if(thing === ''){
             alert("请输入代办项目！");
           }else{
-            this.peoples.unshift({id:this.id++,name:thing,state:false});
+            // this.peoples.unshift({id:this.id++,name:thing,state:false});
+            this.create = {id:this.id++,name:thing,state:false};
+            // var params = new URLSearchParams();
+            // params.append("id",this.id++);
+            // params.append("name",thing);
+            // params.append("state",false);
+            // console.log(params);
+            api._post(this.create).then(res=>{
+              console.log(this.peoples);
+              this.getRecord();
+              console.log(this.peoples);
+            })
             this.thing = '';
           }
           this.$store.commit('GO_PAGE',0 );
-          console.log(this.$store.state.offset);
+          // console.log(this.$store.state.offset);
         },
         //单个删除项目
         del(value,index){
@@ -215,7 +240,7 @@
         },
         //反选
         reversefun(){
-          console.log("hey"+this.checkItem);
+          // console.log("hey"+this.checkItem);
           this.peoples.forEach(function (value,index) {
              var flag = this.checkItem.indexOf(this.peoples[index].id);
               if (this.peoples[index].state === true){
@@ -227,7 +252,7 @@
                 this.checkItem.push(this.peoples[index].id);
               }
             },this);
-          console.log("byb"+this.checkItem);
+          // console.log("byb"+this.checkItem);
         },
         //编辑项目
         edit(index){
@@ -245,31 +270,24 @@
         },
         //更新名字
         updatename(index){
-          //判断名字是否已经存在
-          // var isExist = (function (newname,value,tempname) {
-          //   if (tempname === newname){
-          //     return false;
-          //   }
-          //   for (let i = 0;i<value.length;i++){
-          //     if(newname === value[i].name){
-          //       return true;
-          //     }
-          //   }
-          //   return false;
-          // })(this.newname,this.peoples,this.tempname);
           //li恢复原状
           this.editItem = "";
           if (this.newname ===''){
             this.del(this.peoples[index].id,index);
           }else{
             //更新people中的数据
-            this.peoples[index].name = this.newname;
+            // this.peoples[index].name = this.newname;
+            this.update = {id:this.peoples[index].id,name:this.newname,state:this.peoples[index].state};
+            api._update(this.update).then(res=>{
+              console.log(res);
+            });
+            this.getRecord();
             // 如果是已经选中的状态就变成选中状态，如果非选中状态不执行
             if (this.peoples[index].state){
               //判断是否在已选中数组中，在则不push，不在则push，因为是id，不需要考虑重复的情况
               if (this.checkItem.indexOf(this.peoples[index].id)===-1){
                 this.checkItem.push(this.peoples[index].id);
-                console.log(this.checkItem);
+                // console.log(this.checkItem);
               }
             }
           }
